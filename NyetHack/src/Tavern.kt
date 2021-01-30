@@ -10,15 +10,25 @@ var patronList = mutableListOf("Eli","Mordoc","Sophie")
 var menuList = File("data/tavern-menu-items.txt").readText().split("\n")
 var lastName = listOf("Ironfoot","Fernsworth","Baggins")
 val uniquePatrons = mutableSetOf<String>()
+val partronGold = mutableMapOf<String,Double>()
+
+
 
 fun main(args:Array<String>) {
 
+
+
     displayMenu(menuList)
+
     (0..9).forEach {
         val first = patronList.shuffled().first()
         val last = lastName.shuffled().first()
         val name = "$first+$last"
         uniquePatrons += name
+    }
+
+    uniquePatrons.forEach{
+        partronGold[it] = 6.0
     }
 
     var orderCount = 0
@@ -27,11 +37,7 @@ fun main(args:Array<String>) {
         menuList.shuffled().first())
         orderCount++
     }
-//
-//    patronList.forEachIndexed { index, s ->
-//        println("Good evening, $s your're #${index+1} in line")
-//        placeOrder(s,uniquePatrons.shuffled().first())
-//    }
+    displayBalance()
 }
 
 private fun placeOrder(patronName:String, menu: String){
@@ -44,7 +50,8 @@ private fun placeOrder(patronName:String, menu: String){
     val message = "$patronName buys a $name ($type) for $price"
     println(message)
 
-//    performPurchase(price.toDouble())
+
+    performPurchase(price.toDouble(),patronName)
 
     val phrase = if( name.contains("Dragon's Breath",true)){
         "$patronName exclaims ${toDragonSpeak("Ah, delicious $name!!")} remaing Wine is ${decreaseWine()}"
@@ -69,26 +76,20 @@ private fun toDragonSpeak(phrase:String)=phrase.replace(Regex("[aeiouAEIOU]")){
         }
 }
 
-fun performPurchase(price:Double){
-    displayBalance()
-//    val totalPurse = playerGold + (playerSilver/100.0)
-    val totalPurse = playerDragonCoin*4.17
-    println("Total purse: $totalPurse")
-    println("Purchase item for $price")
+fun performPurchase(price:Double,patronName: String){
+    val taotalPurse = partronGold.getValue(patronName)
 
-    val remainingBalance = totalPurse - price
-    if( remainingBalance < 0){
-        println("Remaining balance is not enough!")
+    if(taotalPurse - price < 0){
+        uniquePatrons.remove(patronName)
         return
     }
-
-    println("Remaining balance: ${"%.2f".format(remainingBalance)}")
-
-    displayBalance()
+    partronGold[patronName] = taotalPurse - price
 }
 
 private fun displayBalance() {
-    println("Player's purchase balance: DragonGold: $playerDragonCoin")
+    partronGold.forEach { patron, balance ->
+        println("$patron's purchase balance: Balance: ${"%.2f".format(balance)}")
+    }
 }
 
 private fun displayMenu(menu:List<String>){
@@ -105,6 +106,7 @@ private fun displayMenu(menu:List<String>){
         showMesage = showMesage.padStart(showMesage.length+(lineWidth - "~[${items[0]}]~".length)/2).padEnd(lineWidth)
         println(showMesage)
     }
-
 }
+
+
 
