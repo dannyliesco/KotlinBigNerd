@@ -1,9 +1,33 @@
-class Player {
-    val name:String  = "Madrigal"
-            get() {return field.capitalize()}
-    var healthPoints = 89
-    var isBlessed = true
-    private val isImmortal = false
+import java.io.File
+
+class Player(_name:String,
+             var healthPoints:Int = 100,
+             var isBlessed:Boolean,
+             private var isImmortal:Boolean){
+    var name = _name
+        get() = field.capitalize()
+        private set(value) {
+            field.trim()
+        }
+
+    var currentPosition = Coordinate(0,0)
+
+    val hometown by lazy{
+        selectTown()
+    }
+
+    constructor(name:String):this(name,
+        isImmortal = true,
+        isBlessed = true
+        ){
+//        println("second construct")
+    }
+
+    init {
+//        println("init block")
+        require(healthPoints > 0,{"HealthPoints must be greater than zero."})
+        require(name.isNotBlank(),{"Player must have a name"})
+    }
 
     fun formatHealthStatus(): String {
         val healthStatus = when (healthPoints) {
@@ -37,6 +61,13 @@ class Player {
         }
         return status
     }
+
+    private fun selectTown() = File("data/towns.txt")
+        .readText()
+        .split("\n")
+        .shuffled()
+        .first()
+
 
 
 }
