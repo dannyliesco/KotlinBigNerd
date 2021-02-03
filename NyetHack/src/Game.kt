@@ -1,4 +1,5 @@
 import java.lang.Exception
+import kotlin.system.exitProcess
 
 fun main(args:Array<String>){
     Game.play()
@@ -24,10 +25,16 @@ object Game {
             println(currentRoom.load())
             printPlayerStatus(player)
             print("> Enter your command: ")
-            println(GameInput(readLine()).processCommand())
+            GameInput(readLine()).processCommand()
         }
     }
-
+    private fun fight() = currentRoom.monster?.let {
+        while(player.healthPoints > 0 && it.healthPoints > 0){
+            slay(it)
+            Thread.sleep(1000)
+        }
+        "Combat complete"
+    } ?: "There's nothing here to fight"
 
     private fun printPlayerStatus(player:Player){
         println("(Aura:${player.auraColor()})"+
@@ -46,12 +53,28 @@ object Game {
             val newRoom = map[newPosition.x][newPosition.y]
             player.currentPosition = newPosition
             currentRoom = newRoom
-            println("OK, you move $directionInput to the ${newRoom.name}.\n ${newRoom.load()}")
+            println("OK, you move $directionInput to the ${currentRoom.name}.\n ${currentRoom.load()}")
         }catch (e:Exception){
             e.printStackTrace()
             "Invalid direction: $directionInput"
         }
     }
+
+    private fun slay(monster: Monster){
+        println("${monster.name} did ${monster.attack(player)} damage!")
+        println("${player.name} did ${player.attack(monster)} damage!")
+
+        if(player.healthPoints <= 0){
+            println(">>>>> You have been defeated ! Thanks for playing.")
+            exitProcess(0)
+        }
+
+        if(monster.healthPoints <= 0){
+            println(">>>> ${monster.name} has been defeated")
+            currentRoom.monster = null
+        }
+    }
+
 
     private class GameInput(args:String?){
         private val input = args?:""
@@ -62,6 +85,7 @@ object Game {
 
         fun processCommand() = when(command.toLowerCase()){
             "move" -> move(argument)
+            "fight" -> fight()
             "exit" -> {
                 exit = false
                 "Exit"
