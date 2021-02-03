@@ -1,15 +1,15 @@
 import java.lang.Exception
 
-fun main(){
+fun main(args:Array<String>){
     Game.play()
 }
 
 object Game {
-    private val player = Player("Hogen")
     private var currentRoom:Room = TownSquare()
+    private val player = Player("Hogen")
     private var exit = true
     private val map = listOf(
-        listOf(TownSquare(),Room("Tavern"),Room("BackRoom")),
+        listOf(currentRoom,Room("Tavern"),Room("BackRoom")),
         listOf(Room("Long Comidor"),Room("GenericRoom"))
     )
 
@@ -19,43 +19,20 @@ object Game {
     }
 
     fun play(){
-
         while(exit){
-            currentRoom.description()
-            currentRoom.load()
+            println(currentRoom.description())
+            println(currentRoom.load())
             printPlayerStatus(player)
-
             print("> Enter your command: ")
             println(GameInput(readLine()).processCommand())
-
         }
     }
 
 
     private fun printPlayerStatus(player:Player){
-        val auraColor = player.auraColor()
-        val healthStatus = player.formatHealthStatus()
-        println("(Aura:$auraColor)"+
-                "(Blessed: ${if (player.isBlessed) "YES" else "NO" })"+
-                "(Hometown is:${player.hometown})")
-        println("${player.name} $healthStatus")
-    }
-
-    private class GameInput(args:String?){
-        private val input = args?:""
-        val command = input.split(" ")[0]
-        val argument = input.split(" ").getOrElse(1,{" "})
-
-        private fun commandNotFound() = "I'm not quite sure what you're trying to do !"
-
-        fun processCommand() = when(command.toLowerCase()){
-            "move" -> move(argument)
-            "exit" -> {
-                exit = false
-                "Exit"
-            }
-            else -> commandNotFound()
-        }
+        println("(Aura:${player.auraColor()})"+
+                "(Blessed: ${if (player.isBlessed) "YES" else "NO" })")
+        println("${player.name} ${player.formatHealthStatus()}")
     }
 
     private fun move(directionInput: String){
@@ -73,6 +50,23 @@ object Game {
         }catch (e:Exception){
             e.printStackTrace()
             "Invalid direction: $directionInput"
+        }
+    }
+
+    private class GameInput(args:String?){
+        private val input = args?:""
+        val command = input.split(" ")[0]
+        val argument = input.split(" ").getOrElse(1,{" "})
+
+        private fun commandNotFound() = "I'm not quite sure what you're trying to do !"
+
+        fun processCommand() = when(command.toLowerCase()){
+            "move" -> move(argument)
+            "exit" -> {
+                exit = false
+                "Exit"
+            }
+            else -> commandNotFound()
         }
     }
 }
